@@ -6,7 +6,7 @@ describe 'auditd', :type => :class do
       :operatingsystemrelease => '7',
       :concat_basedir         => '/var/lib/puppet/concat',
     }}
-    it { 
+    it {
       should contain_class('auditd')
       should contain_package('audit').with({
         'ensure' => 'present',
@@ -118,6 +118,28 @@ describe 'auditd', :type => :class do
         'restart' => '/etc/init.d/auditd restart',
         'stop'    => '/etc/init.d/auditd stop',
       })
+    }
+  end
+  context 'with rules on RedHat 6' do
+    let (:facts) {{
+      :osfamily               => 'RedHat',
+      :operatingsystemrelease => '6',
+      :concat_basedir         => '/var/lib/puppet/concat',
+    }}
+    let (:params) {{
+      :rules => {
+        'delete other rules' => {
+          'content' => '-D',
+          'order'   => '00',
+        },
+        'watch for updates to users' => {
+          'content' => '-w /etc/passwd -p wa -k identity',
+          'order'   => '01',
+        }
+      }
+    }}
+    it {
+      should contain_file('/etc/audit/audit.rules').with_content("-D\n-w /etc/passwd -p wa -k identity")
     }
   end
 end

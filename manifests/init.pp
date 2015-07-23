@@ -230,6 +230,9 @@
 #   Location of the key for this client's principal. Note that the key file
 #   must be owned by root and mode 0400.
 #
+# [*rules*]
+#   Hash of auditd rules to be applied using the audit::rule defined type.
+#
 # === Examples
 #
 #  class { 'auditd':
@@ -285,6 +288,8 @@ class auditd (
   $manage_service          = $::auditd::params::manage_service,
   $service_restart         = $::auditd::params::service_restart,
   $service_stop            = $::auditd::params::service_stop,
+
+  $rules                   = {},
 
 ) inherits auditd::params {
 
@@ -378,6 +383,11 @@ class auditd (
     ensure_newline => true,
     warn           => true,
     alias          => 'audit-file',
+  }
+
+  # If a hash of rules is supplied with class then call auditd::rules defined type to apply them
+  if $rules {
+    create_resources('::auditd::rule', $rules)
   }
 
   # Manage the service
